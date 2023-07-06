@@ -56,8 +56,29 @@ module miniRV_SoC (
     wire [31:0]  wdata_bridge2dram;
     
     // Interface between bridge and peripherals
-    // TODO: 在此定义总线桥与外设I/O接口电路模块的连接信号
-    //
+    // TODO done: 在此定义总线桥与外设I/O接口电路模块的连接信号
+    //输出：数码显示管dig
+	wire         rst_bridge2dig;
+	wire         clk_bridge2dig;
+    wire [11:0]  addr_bridge2dig;
+    wire         wen_bridge2dig;
+    wire [31:0]  wdata_bridge2dig;
+	//输出：LED显示
+	wire         rst_bridge2led;
+	wire         clk_bridge2led;
+    wire [11:0]  addr_bridge2led;
+    wire         wen_bridge2led;
+    wire [31:0]  wdata_bridge2led;
+	//输入：拨码开关
+	wire         rst_bridge2sw;
+    wire         clk_bridge2sw;
+    wire [11:0]  addr_bridge2sw;
+    wire [31:0]  rdata_sw2bridge;
+	//输入：按键开关
+	wire         rst_bridge2btn;
+    wire         clk_bridge2btn;
+    wire [11:0]  addr_bridge2btn;
+    wire [31:0]  rdata_btn2bridge;
     
 
     
@@ -122,30 +143,30 @@ module miniRV_SoC (
         .wdata_to_dram      (wdata_bridge2dram),
         
         // Interface to 7-seg digital LEDs
-        .rst_to_dig         (/* TODO */),
-        .clk_to_dig         (/* TODO */),
-        .addr_to_dig        (/* TODO */),
-        .wen_to_dig         (/* TODO */),
-        .wdata_to_dig       (/* TODO */),
+        .rst_to_dig         (rst_bridge2dig	),
+        .clk_to_dig         (clk_bridge2dig	),
+        .addr_to_dig        (addr_bridge2dig),
+        .wen_to_dig         (wen_bridge2dig	),
+        .wdata_to_dig       (wdata_bridge2dig),
 
         // Interface to LEDs
-        .rst_to_led         (/* TODO */),
-        .clk_to_led         (/* TODO */),
-        .addr_to_led        (/* TODO */),
-        .wen_to_led         (/* TODO */),
-        .wdata_to_led       (/* TODO */),
+        .rst_to_led         (rst_bridge2led	),
+        .clk_to_led         (clk_bridge2led	),
+        .addr_to_led        (addr_bridge2led),
+        .wen_to_led         (wen_bridge2led	),
+        .wdata_to_led       (wdata_bridge2led),
 
         // Interface to switches
-        .rst_to_sw          (/* TODO */),
-        .clk_to_sw          (/* TODO */),
-        .addr_to_sw         (/* TODO */),
-        .rdata_from_sw      (/* TODO */),
+        .rst_to_sw          (rst_bridge2sw),
+        .clk_to_sw          (clk_bridge2sw),
+        .addr_to_sw         (addr_bridge2sw),
+        .rdata_from_sw      (rdata_sw2bridge),
 
         // Interface to buttons
-        .rst_to_btn         (/* TODO */),
-        .clk_to_btn         (/* TODO */),
-        .addr_to_btn        (/* TODO */),
-        .rdata_from_btn     (/* TODO */)
+        .rst_to_btn         (rst_bridge2btn),
+        .clk_to_btn         (clk_bridge2btn),
+        .addr_to_btn        (addr_bridge2btn),
+        .rdata_from_btn     (rdata_btn2bridge)
     );
 
     DRAM Mem_DRAM (
@@ -157,7 +178,54 @@ module miniRV_SoC (
     );
     
     // TODO: 在此实例化你的外设I/O接口电路模块
-    //
+	// pe_digital(tube)  pe_led  pe_switch  pe_button
+	pe_digital DIGa (
+        .rst        (rst_bridge2dig),
+        .clk        (clk_bridge2dig),
+        .addr       (addr_bridge2dig),//写数码管的地址[11:0]  判断如果这个地址确实是数码管的地址000 则有反应
+        .wen        (wen_bridge2dig),//数码管的写使能
+		.data       (wdata_bridge2dig),//要数码管显示的数据[31:0]
+		
+        .led_en     (dig_en),
+        .led_cx     (led_cx)	
+    );
 
+	wire [6:0] led_cx;	
+	assign DN_A = led_cx[0];
+	assign DN_B = led_cx[1];
+	assign DN_C = led_cx[2];
+	assign DN_D = led_cx[3];
+	assign DN_E = led_cx[4];
+	assign DN_F = led_cx[5];
+	assign DN_G = led_cx[6];
+	assign DN_DP = 1;//低电平有效 小数点始终不亮
+	
+	pe_led LEDs (//0xFFFF_F060
+        .rst        (rst_bridge2led),
+        .clk        (clk_bridge2led),
+        .addr       (addr_bridge2led),//写数码管的地址[11:0]  判断如果这个地址确实是数码管的地址060 则有反应  
+        .wen        (wen_bridge2led),//数码管的写使能
+		.data       (wdata_bridge2led),//高电平有效[31:0]
+		
+        .led     (led)//[23:0] 输出 控制24个小led 高电平有效
+    );
+	
+	pe_switch SWITCHes (//0xFFFF_F070
+        .rst        (rst_bridge2sw),
+        .clk        (clk_bridge2sw),
+        .addr       (addr_bridge2sw),//写拨码开关的地址[11:0]  070
+        .switches     (switches),//[23:0] 24个拨码开关的输入 高电平有效
+		
+		.data       (rdata_sw2bridge)//输出：从拨码开关中读到的数据
+    );
+	
+	pe_button BUTTONs (//0xFFFF_F078
+        .rst        (rst_bridge2btn),
+        .clk        (clk_bridge2btn),
+        .addr       (addr_bridge2btn),//写拨码开关的地址[11:0]  078
+        .button     (button),//5 位 按键开关的输入[ 4:0]
+		
+		.data       (rdata_btn2bridge)//输出：从拨码开关中读到的数据
+    );
 
 endmodule
