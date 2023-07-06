@@ -85,22 +85,14 @@ end
 
 always @(*) begin
     if ((opcode == OPCODE_I || opcode == OPCODE_R)) begin
-		if(funct7 == FUNCT7_NR) begin
-			case (funct3)
+            case (funct3)
 				FUNCT3_AND: alu_op = `ALU_AND;
 				FUNCT3_OR : alu_op = `ALU_OR ;
 				FUNCT3_XOR: alu_op = `ALU_XOR;
 				FUNCT3_SLL: alu_op = `ALU_SLL;
-				FUNCT3_ADD: alu_op = `ALU_ADD;
-				FUNCT3_SRL: alu_op = `ALU_SRL;
+				FUNCT3_ADD: alu_op= (opcode == OPCODE_R && funct7 == FUNCT7_SUB_SRA)?`ALU_SUB:`ALU_ADD;
+				FUNCT3_SRL: alu_op= (funct7 == FUNCT7_SUB_SRA)?`ALU_SRA:`ALU_SRL;
 			endcase
-		end
-		else if(funct7 == FUNCT7_SUB_SRA) begin
-			case (funct3)
-				FUNCT3_SUB: alu_op = `ALU_SUB;
-				FUNCT3_SRA: alu_op = `ALU_SRA;
-			endcase
-		end
     end 
 	else if (opcode == OPCODE_B) begin
         case (funct3)
@@ -108,7 +100,6 @@ always @(*) begin
 				FUNCT3_BNE: alu_op = `ALU_BNE;
 				FUNCT3_BLT: alu_op = `ALU_BLT;
 				FUNCT3_BGE: alu_op = `ALU_BGE;
-
 		endcase
     end 
 	else begin

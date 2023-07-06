@@ -73,7 +73,7 @@ if_npc NPC (
 	
 );
 
-assign offset = (npco_sel ? aluC : ext);//若npco_sel=1，则来自ALU.C
+assign offset = (npco_sel==`NPCO_ALU) ? aluC : ext;//若npco_sel=1，则来自ALU.C
 
 if_pc PC (
 	.clk	(cpu_clk),
