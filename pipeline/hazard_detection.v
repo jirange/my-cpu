@@ -7,7 +7,7 @@ module hazard_detection(
     input      [4 :0] id_rs1     ,//rs1 寄存器编号 
     input      [4 :0] id_rs2     ,
     input      [31:0] id_rd1     ,
-    input      [31:0] id_rd2     ,
+    input      [31:0] id_aluB    ,//rd1和alub都是选择之后的了
     input      [4 :0] mem_wr      ,
     input      [4 :0] wb_wr       ,//写回的寄存器编号
     input             mem_we  ,//寄存器写使能
@@ -17,8 +17,8 @@ module hazard_detection(
     input      [31:0] mem_wd      ,//写回的数据
     input      [31:0] wb_wd       ,//写回的数据
 
-    output reg [31:0] final_rs1  ,
-    output reg [31:0] final_rs2  ,
+    output reg [31:0] final_rd1  ,
+    output reg [31:0] final_rd2  ,
 
     output reg        if_id_flush ,//if/id寄存器的清空信号 因为分支检测
     output reg        id_ex_flush,//id/ex寄存器的清空信号 因为分支检测
@@ -53,17 +53,17 @@ assign id_ex_flush = (load_hazard||is_branch) ? 1:0;
 // 前递数据
 /*将ex、MEM、WB阶段的结果前推到ID阶段，参与ID阶段运算 源操作数的选择*/
 always @(*) begin
-    if (rs1_id_ex_hazard)     	final_rs1 = ex_wd ;
-    else if (rs1_id_mem_hazard) final_rs1 = mem_wd ;
-    else if (rs1_id_wb_hazard) 	final_rs1 = wb_wd  ;
-    else                        final_rs1 = id_rd1;//不前递的话 还是保持原来的rd1
+    if (rs1_id_ex_hazard)     	final_rd1 = ex_wd ;
+    else if (rs1_id_mem_hazard) final_rd1 = mem_wd ;
+    else if (rs1_id_wb_hazard) 	final_rd1 = wb_wd  ;
+    else                        final_rd1 = id_rd1;//不前递的话 还是保持原来的rd1
 end
 
 always @(*) begin
-    if (rs2_id_ex_hazard)     	final_rs2 = ex_wd ;
-    else if (rs2_id_mem_hazard) final_rs2 = mem_wd ;
-    else if (rs2_id_wb_hazard) 	final_rs2 = wb_wd  ;
-    else                        final_rs2 = id_rd1;//不前递的话 还是保持原来的rd1
+    if (rs2_id_ex_hazard)     	final_rd2 = ex_wd ;
+    else if (rs2_id_mem_hazard) final_rd2 = mem_wd ;
+    else if (rs2_id_wb_hazard) 	final_rd2 = wb_wd  ;
+    else                        final_rd2 = id_aluB;//不前递的话 还是保持原来的aluB
 end
 
 endmodule
