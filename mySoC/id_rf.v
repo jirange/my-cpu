@@ -13,27 +13,21 @@ module id_rf(
     output     [31:0] rd2
 );
 
-reg [31:0] regfile [31:0];//å¯„å­˜å™¨å †
+reg [31:0] regfile [31:0];//¼Ä´æÆ÷¶Ñ
 
 integer i;
 
-//å†™å¯„å­˜å™¨å †
-always @(posedge clk or negedge rst_n) begin
-
-//    if (~rst_n) begin//ç¡¬ä»¶æ˜¯ä¸éœ€è¦åˆå§‹åŒ–çš„
-//        for (i = 0; i <= 31; i = i + 1) begin
-//            regfile[i] <= 32'b0;//å¤ä½åˆ™å¯„å­˜å™¨å †æ¸…0
-//        end
-//	end else 
+//Ğ´¼Ä´æÆ÷¶Ñ
+always @(posedge clk ) begin
 	begin
 		if(WE && wr!=5'b00000) 	regfile[wr] <= wd;
         else	regfile[wr] <= regfile[wr];
     end
 	
-	regfile[0] <= 0;  //x0å§‹ç»ˆä¸º0 å³ä¾¿å†™è¿›å»äº† ä¹Ÿè¦æ˜¯0
+	regfile[0] <= 0;  //x0Ê¼ÖÕÎª0 ¼´±ãĞ´½øÈ¥ÁË Ò²ÒªÊÇ0
 end
 
-//è¯»å¯„å­˜å™¨å †
+//¶Á¼Ä´æÆ÷¶Ñ
 assign rd1 = regfile[rs1];
 assign rd2 = regfile[rs2];
 

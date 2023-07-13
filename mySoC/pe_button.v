@@ -1,29 +1,29 @@
 `timescale 1ns / 1ps
-//ç®€å•å†™å†™ åº”è¯¥æ˜¯æ²¡ç”¨ä¸Š
+//¼òµ¥Ğ´Ğ´ Ó¦¸ÃÊÇÃ»ÓÃÉÏ
 module pe_button(
     input wire clk,
 	input wire rst,
 	input wire [11:0] addr,//078
 
-	input wire [4:0] button,//5 ä½ æŒ‰é”®å¼€å…³çš„è¾“å…¥[4:0]
+	input wire [4:0] button,//5 Î» °´¼ü¿ª¹ØµÄÊäÈë[4:0]
 	
-	output reg [31:0] data//ä»æ‹¨ç å¼€å…³ä¸­è¯»åˆ°çš„æ•°æ®
+	output reg [31:0] data//´Ó²¦Âë¿ª¹ØÖĞ¶Áµ½µÄÊı¾İ
 	);
 	
-	wire enable_signal;//è¯»ä½¿èƒ½
+	wire enable_signal;//¶ÁÊ¹ÄÜ
 	assign enable_signal = (addr==12'h078);
 	
-//ä¼ å‡ºçš„dataåˆ°åº•æ˜¯ä»€ä¹ˆå‘¢ æ˜¯ä»€ä¹ˆæ ·çš„å½¢å¼å‘¢ ä¼ è¿›æ¥çš„5ä½é•¿çš„çš„è¾“å…¥åˆæ˜¯ä»€ä¹ˆå½¢å¼å‘¢ ï¼Ÿï¼Ÿï¼Ÿï¼Ÿï¼Ÿï¼Ÿï¼Ÿ
+//´«³öµÄdataµ½µ×ÊÇÊ²Ã´ÄØ ÊÇÊ²Ã´ÑùµÄĞÎÊ½ÄØ ´«½øÀ´µÄ5Î»³¤µÄµÄÊäÈëÓÖÊÇÊ²Ã´ĞÎÊ½ÄØ £¿£¿£¿£¿£¿£¿£¿
 	always @ (posedge clk or posedge rst) begin
 		if (rst)       
 			data <= 32'b0;
 		else if (enable_signal) begin
-		//ä»¥äºŒè¿›åˆ¶åŸç çš„æ–¹å¼è¯»å…¥ èµ‹å€¼ç»™ä½5ä½ é«˜ä½æ¸…ç©º
+		//ÒÔ¶ş½øÖÆÔ­ÂëµÄ·½Ê½¶ÁÈë ¸³Öµ¸øµÍ5Î» ¸ßÎ»Çå¿Õ
 			data <= {8'b00000000,button[4:0]};
 			
 		end
 		else data<=data;
-		//enable_signal=0 ä¸è¯»çš„æ—¶å€™ ä¿æŒåŸçŠ¶æ€
+		//enable_signal=0 ²»¶ÁµÄÊ±ºò ±£³ÖÔ­×´Ì¬
 	end
 	
 endmodule

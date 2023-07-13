@@ -2,14 +2,14 @@
 module pe_switch(
     input wire clk,
 	input wire rst,
-	input wire [11:0] addr,//åˆ¤æ–­å¦‚æœè¿™ä¸ªåœ°å€ç¡®å®æ˜¯switchçš„åœ°å€070 
+	input wire [11:0] addr,//ÅĞ¶ÏÈç¹ûÕâ¸öµØÖ·È·ÊµÊÇswitchµÄµØÖ·070 
 
-	input wire [23:0] switches,//24ä¸ªæ‹¨ç å¼€å…³çš„è¾“å…¥ é«˜ç”µå¹³æœ‰æ•ˆ
+	input wire [23:0] sw,//24¸ö²¦Âë¿ª¹ØµÄÊäÈë ¸ßµçÆ½ÓĞĞ§
 	
-	output reg [31:0] data//ä»æ‹¨ç å¼€å…³ä¸­è¯»åˆ°çš„æ•°æ®
+	output reg [31:0] data//´Ó²¦Âë¿ª¹ØÖĞ¶Áµ½µÄÊı¾İ
 	);
 	
-	wire enable_signal;//è¯»ä½¿èƒ½
+	wire enable_signal;//¶ÁÊ¹ÄÜ
 	assign enable_signal = (addr==12'h070);
 	
 
@@ -17,10 +17,10 @@ module pe_switch(
 		if (rst)       
 			data <= 32'b0;
 		else if (enable_signal) begin
-		//ä»¥äºŒè¿›åˆ¶åŸç çš„æ–¹å¼è¯»å…¥ èµ‹å€¼ç»™ä½24ä½ é«˜ä½æ¸…ç©º
-			data <= {8'b00000000,switches[23:0]};
+		//ÒÔ¶ş½øÖÆÔ­ÂëµÄ·½Ê½¶ÁÈë ¸³Öµ¸øµÍ24Î» ¸ßÎ»Çå¿Õ
+			data <= {8'b00000000,sw[23:0]};
 		end
-		else data<=data;//enable_signal=0 ä¸è¯»çš„æ—¶å€™ ä¿æŒåŸçŠ¶æ€
+		else data<=data;//enable_signal=0 ²»¶ÁµÄÊ±ºò ±£³ÖÔ­×´Ì¬
 		
 	end
 	endmodule

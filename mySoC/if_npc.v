@@ -2,10 +2,10 @@
 `include "defines.vh"
 
 module if_npc(
-    input      [1:0] op	,
+    input      [1:0] op		,
     input      [31:0] pc	,
     input      br	,
-    input      [31:0] offset  	, 
+    input      [31:0] offset, 
 
     output reg [31:0] npc   ,
     output     [31:0] pc4
@@ -13,7 +13,6 @@ module if_npc(
 
 // pc4
 assign pc4 = pc + 32'h4;
-
 // npc
 always @(*) begin
     case (op)
@@ -25,11 +24,12 @@ always @(*) begin
 					if(br) npc = pc + offset;
 					else npc = pc + 32'h4;
 				end
-		//åˆ¤æ–­æ¡ä»¶æˆç«‹ï¼Œåˆ™br=ALU.f=1,åˆ™è·³è½¬ ä¸ç„¶å°±+4
+		//ÅĞ¶ÏÌõ¼ş³ÉÁ¢£¬Ôòbr=ALU.f=1,ÔòÌø×ª ²»È»¾Í+4
 		
         default:     npc = npc;
     endcase
 end
+
 
 
 endmodule

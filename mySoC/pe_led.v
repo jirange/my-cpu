@@ -1,17 +1,17 @@
 `timescale 1ns / 1ps
-//ç®€å•å®ç°ä¸€ä¸‹ åº”è¯¥æ˜¯æ²¡ç”¨ä¸Š
+//¼òµ¥ÊµÏÖÒ»ÏÂ Ó¦¸ÃÊÇÃ»ÓÃÉÏ
 module pe_led(
     input wire clk,
 	input wire rst,
-	input wire [11:0] addr,//åˆ¤æ–­å¦‚æœè¿™ä¸ªåœ°å€ç¡®å®æ˜¯ledçš„åœ°å€060 
+	input wire [11:0] addr,//ÅĞ¶ÏÈç¹ûÕâ¸öµØÖ·È·ÊµÊÇledµÄµØÖ·060 
 
-	input wire wen,//å†™ä½¿èƒ½
-	input wire [31:0] data,//è¦æ˜¾ç¤ºçš„æ•°æ®[31:0]
+	input wire wen,//Ğ´Ê¹ÄÜ
+	input wire [31:0] data,//ÒªÏÔÊ¾µÄÊı¾İ[31:0]
 	output reg [23:0] led
 
 	);
 	
-	wire enable_signal;//çœŸæ­£çš„å†™ä½¿èƒ½
+	wire enable_signal;//ÕæÕıµÄĞ´Ê¹ÄÜ
 	assign enable_signal = ((addr==12'h060) && (wen==1));
 	
 
@@ -19,9 +19,9 @@ module pe_led(
 		if (rst)       
 			led <=0;
 		else if (enable_signal) begin
-			led <= data[23:0];//ç›´æ¥å–ä½24ä½çš„å€¼èµ‹å€¼
+			led <= data[23:0];//Ö±½ÓÈ¡µÍ24Î»µÄÖµ¸³Öµ
 		end
-		else led<=led;//enable_signal=0 ä¸å†™çš„æ—¶å€™ ä¿æŒåŸçŠ¶æ€
+		else led<=led;//enable_signal=0 ²»Ğ´µÄÊ±ºò ±£³ÖÔ­×´Ì¬
 		
 	end
 	endmodule

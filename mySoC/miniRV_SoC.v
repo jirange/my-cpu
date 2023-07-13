@@ -6,7 +6,7 @@ module miniRV_SoC (
     input  wire         fpga_rst,   // High active
     input  wire         fpga_clk,
 
-    input  wire [23:0]  switches,
+    input  wire [23:0]  sw,
     input  wire [ 4:0]  button,
     output wire [ 7:0]  dig_en,
     output wire         DN_A,
@@ -169,9 +169,14 @@ module miniRV_SoC (
         .rdata_from_btn     (rdata_btn2bridge)
     );
 
+//下板需要减去0x0000 4000 trace验证等不用
+//wire [31:0] waddr_temp = addr_bridge2dram-32'h4000;//下板用
+wire [31:0] waddr_temp = addr_bridge2dram;  //trace用
+
+
     DRAM Mem_DRAM (
         .clk        (clk_bridge2dram),
-        .a          (addr_bridge2dram[15:2]),
+        .a          (waddr_temp[15:2]),
         .spo        (rdata_dram2bridge),
         .we         (wen_bridge2dram),
         .d          (wdata_bridge2dram)
@@ -179,16 +184,7 @@ module miniRV_SoC (
     
     // TODO: 在此实例化你的外设I/O接口电路模块
 	// pe_digital(tube)  pe_led  pe_switch  pe_button
-	pe_digital DIGa (
-        .rst        (rst_bridge2dig),
-        .clk        (clk_bridge2dig),
-        .addr       (addr_bridge2dig),//写数码管的地址[11:0]  判断如果这个地址确实是数码管的地址000 则有反应
-        .wen        (wen_bridge2dig),//数码管的写使能
-		.data       (wdata_bridge2dig),//要数码管显示的数据[31:0]
-		
-        .led_en     (dig_en),
-        .led_cx     (led_cx)	
-    );
+
 
 	wire [6:0] led_cx;	
 	assign DN_A = led_cx[0];
@@ -200,6 +196,16 @@ module miniRV_SoC (
 	assign DN_G = led_cx[6];
 	assign DN_DP = 1;//低电平有效 小数点始终不亮
 	
+	pe_digital DIGs (
+        .rst        (rst_bridge2dig),
+        .clk        (clk_bridge2dig),
+        .addr       (addr_bridge2dig),//写数码管的地址[11:0]  判断如果这个地址确实是数码管的地址000 则有反应
+        .wen        (wen_bridge2dig),//数码管的写使能
+		.data       (wdata_bridge2dig),//要数码管显示的数据[31:0]
+		
+        .led_en     (dig_en),
+        .led_cx     (led_cx)	
+    );
 	pe_led LEDs (//0xFFFF_F060
         .rst        (rst_bridge2led),
         .clk        (clk_bridge2led),
@@ -214,7 +220,7 @@ module miniRV_SoC (
         .rst        (rst_bridge2sw),
         .clk        (clk_bridge2sw),
         .addr       (addr_bridge2sw),//写拨码开关的地址[11:0]  070
-        .switches     (switches),//[23:0] 24个拨码开关的输入 高电平有效
+        .sw     (sw),//[23:0] 24个拨码开关的输入 高电平有效
 		
 		.data       (rdata_sw2bridge)//输出：从拨码开关中读到的数据
     );

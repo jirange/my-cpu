@@ -12,16 +12,16 @@ module ex_alu(
 
 wire [4:0] shamt = B[4:0];
 
-//æŠŠåˆ†æ”¯æŽ§åˆ¶çš„ç‰¹æ®Šæ“ä½œ æ‹¿å‡ºæ¥ åº”è¯¥å¯ä»¥å¢žåŠ é€Ÿåº¦ å¯åœ¨æ­¤å…ˆä¸äº† å…ˆåœ¨alué‡Œå…¨éƒ¨å®Œæˆçœ‹çœ‹
+//°Ñ·ÖÖ§¿ØÖÆµÄÌØÊâ²Ù×÷ ÄÃ³öÀ´ Ó¦¸Ã¿ÉÒÔÔö¼ÓËÙ¶È ¿ÉÔÚ´ËÏÈ²»ÁË ÏÈÔÚaluÀïÈ«²¿Íê³É¿´¿´
 
 /*
-beq x1 x2 label  x1ä¸Žx2ç›¸ç­‰ åˆ™è¾“å‡º1  x1-x2
-bne x1 x2 label  x1ä¸Žx2ä¸ç­‰ åˆ™è¾“å‡º1  
-blt x1 x2 label  x1<x2 åˆ™è¾“å‡º1  
-bge x1 x2 label  x1å¤§äºŽç­‰äºŽx2 åˆ™è¾“å‡º1  */
+beq x1 x2 label  x1Óëx2ÏàµÈ ÔòÊä³ö1  x1-x2
+bne x1 x2 label  x1Óëx2²»µÈ ÔòÊä³ö1  
+blt x1 x2 label  x1<x2 ÔòÊä³ö1  
+bge x1 x2 label  x1´óÓÚµÈÓÚx2 ÔòÊä³ö1  */
 
-//alu éœ€è¦æžä»€ä¹ˆè¡¥ç é€»è¾‘ ç§»ä½å™¨ ä¹‹ç±»çš„å—  
-//å¤ç”¨subï¼Œåˆ¤æ–­æ ‡å¿—ä½åˆæ˜¯ä½•æ„
+//alu ÐèÒª¸ãÊ²Ã´²¹ÂëÂß¼­ ÒÆÎ»Æ÷ Ö®ÀàµÄÂð  
+//¸´ÓÃsub£¬ÅÐ¶Ï±êÖ¾Î»ÓÖÊÇºÎÒâ
 
 	
 always @(*) begin

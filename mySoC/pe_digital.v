@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 module pe_digital#(
-	parameter NUM0 = 7'b1000000,//40 G……A
+	parameter NUM0 = 7'b1000000,//40 G����A
 	parameter NUM1 = 7'b1111001,//79
 	parameter NUM2 = 7'b0100100,//24
 	parameter NUM3 = 7'b0110000,//30
@@ -16,39 +16,67 @@ module pe_digital#(
 	parameter NUMD = 7'h21,
 	parameter NUME = 7'h06,
 	parameter NUMF = 7'h0e,
-	parameter BLANK = 7'b1111111
+	parameter BLANK = 7'b1111111,
+	parameter INTERVAL = 99999 //2ms=0.002s
+//	parameter INTERVAL = 4 //���� 5ns
 )(
     input wire clk,
 	input wire rst,
-	input wire [11:0] addr,//写数码管的地址[11:0]  判断如果这个地址确实是数码管的地址 则有反应
-	//是cpu地址的低12位 即16进制的3位 0xFFFF_F000 后三位有什么用吗 难道说 必须是000 如果是010什么的就不是数码管了？ 相当于具体的偏移信号
-	input wire wen,//数码管的写使能
+	input wire [11:0] addr,//д����ܵĵ�ַ[11:0]  �ж���������ַȷʵ������ܵĵ�ַ ���з�Ӧ
+	//��cpu��ַ�ĵ�12λ ��16���Ƶ�3λ 0xFFFF_F000 ����λ��ʲô���� �ѵ�˵ ������000 �����010ʲô�ľͲ���������ˣ� �൱�ھ����ƫ���ź�
+	input wire wen,//����ܵ�дʹ��
 
 	
-	input wire [31:0] data,//要数码管显示的数据[31:0]
+	input wire [31:0] data,//Ҫ�������ʾ������[31:0]
 	output reg [7:0] led_en,//low
 	output reg [6:0] led_cx//low
 	);
 	
-	//数码管	0xFFFF_F000
-	wire enable_signal;//真正的写使能
+	//�����	0xFFFF_F000
+	wire enable_signal;//������дʹ��
 	assign enable_signal = ((addr==12'h000) && (wen==1));
 
+
+    reg [24:0] cnt;//16 8 4 2 1
+	reg cnt_inc;
+	always @ (posedge clk or posedge rst) begin
+		if (rst) cnt_inc <= 1'b1;
+
+	end
+
+	always @ (posedge clk or posedge rst) begin
+		if (rst)        cnt <= 0;          
+		else if (cnt == INTERVAL)  cnt <= 0;   
+		else if  (cnt_inc) cnt <= cnt + 1;  
+	end
+
+	always @ (posedge clk or posedge rst) begin
+
+		if(rst == 1'b1)
+			led_en <= 8'b11111111;
+		else if (led_en == 8'b11111111 &&cnt == INTERVAL)
+			led_en <= 8'b11111110;
+		else if (cnt == INTERVAL)
+			led_en <= ~((~led_en) << 1'b1);// = not 《=7/13
+
+	end
+	
+	
 	reg [31:0] num;
 
 	 
-	//data 可能是0x12345678 在对应的位置上显示对应的十六进制数
+	//data ������0x12345678 �ڶ�Ӧ��λ������ʾ��Ӧ��ʮ��������
 	reg [6:0] display_num [7:0];
 	integer i;
 	always @ (posedge clk or posedge rst) begin
 		if (rst)       
 			for (i = 0; i <= 7; i = i + 1) begin
-				display_num[i] <= BLANK;//复位数码管显示的数据 全亮
+				display_num[i] <= BLANK;//��λ�������ʾ������ ȫ��
 			end
 		else if (enable_signal) begin
 			num = data;
 			for (i = 0; i <= 7; i = i + 1) begin
-				case(num[3:0])//每次只取低四位 每次右移四位
+				case(num[3:0])//ÿ��ֻȡ����λ ÿ��������λ
                 4'h0:display_num[i]<=NUM0;
                 4'h1:display_num[i]<=NUM1;
                 4'h2:display_num[i]<=NUM2;
@@ -71,8 +99,8 @@ module pe_digital#(
 				num = num>>4;
 			end
 		end
-		else //enable_signal=0 不写的时候 保持原状态
-		display_num<=display_num;
+		//enable_signal=0 ��д��ʱ�� ����ԭ״̬  �Ĵ��� ��Ȼ����ԭ״̬  else display_num<=display_num;
+		
 	end
 	always @ (posedge clk) begin
 		if(rst)

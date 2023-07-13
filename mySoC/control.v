@@ -24,7 +24,7 @@ module control #(
 	parameter FUNCT3_OR     = 3'b110    ,
     parameter FUNCT3_AND    = 3'b111    ,
 	
-    parameter FUNCT7_NR      = 7'b0000000,//æ­£å¸¸çš„Rå‹æŒ‡ä»¿
+    parameter FUNCT7_NR      = 7'b0000000,//normal R
     parameter FUNCT7_SUB_SRA = 7'b0100000,
 
 		
@@ -41,7 +41,7 @@ module control #(
     output            npco_sel  ,
     output      	  rf_we		,
     output reg  [1:0] rf_wesl	,
-    output reg  [2:0] sext_op	,//ä»¿ä¹ˆæ—¶å€™ç”¨regå‘¿  ä¸æ˜¯ä¸¿ä½çš„æ—¶å¿™ï¼Ÿï¼¿
+    output reg  [2:0] sext_op	,
     output reg  [3:0] alu_op	,
     output            alub_sel	,
     output            dram_we    
@@ -58,7 +58,7 @@ always @(*) begin
 end			
 
 assign npco_sel = (opcode==OPCODE_I_JALR) ? `NPCO_ALU :`NPCO_SEXT;	
-//å¦‚addç­‰æŒ‡ä»¿ åº”è¯¥æ˜¿-ï¼Œä¹Ÿèµ‹å¿¼ä¸º0äº¿ åæ­£æ— æ‰€è°¿
+//ÈçaddµÈ Ó¦¸Ã£¬Ò²¸³Îª0 ·´ÕıÎŞËùÎ½
 
 assign rf_we = (opcode==OPCODE_S)||(opcode==OPCODE_B) ? `RF_WN:`RF_WY;
 
@@ -79,7 +79,7 @@ always @(*) begin
         OPCODE_U : sext_op = `EXT_U;
         OPCODE_J : sext_op = `EXT_J;
         default:   sext_op = `EXT_I;
-		//Rå‹æŒ‡ä»¤ä¹Ÿå½“åšIå‹æ‰©å±•äº†  åæ­£æ— æ‰€è°¿
+		//RĞÍÖ¸ÁîÒ²µ±×öIĞÍÀ©Õ¹ÁË  ·´ÕıÎŞËùÎ½
     endcase
 end	
 
