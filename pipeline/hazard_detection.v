@@ -3,7 +3,7 @@ module hazard_detection(
     input             clk         ,
     input             rst_n       ,
 
-    input             is_branch  ,
+    input             is_jump  ,
     input      [4 :0] id_rs1     ,//rs1 寄存器编号 
     input      [4 :0] id_rs2     ,
     input      [31:0] id_rd1     ,
@@ -13,7 +13,7 @@ module hazard_detection(
     input             mem_we  ,//寄存器写使能
     input             wb_we   ,//寄存器写使能
 
-    input      		  dram_we     ,//写回数据来源选择
+    input      		  mem_dram_we     ,//写回数据来源选择
     input      [31:0] mem_wd      ,//写回的数据
     input      [31:0] wb_wd       ,//写回的数据
 
@@ -43,11 +43,11 @@ wire rs2_id_wb_hazard = (wb_rd == id_rs2) && wb_we && wb_wr != 0 && alub_sel==`A
 
 //停止stop 不得不停 如 load-使用型冒险
 wire load_hazard;
-assign load_hazard = (rs1_id_ex_hazard || rs_2id_ex_hazard) && dram_we == `DRAM_WY;
+assign load_hazard = (rs1_id_ex_hazard || rs2_id_ex_hazard) &&  mem_dram_we == `DRAM_WY;
 
 assign pipeline_stop = load_hazard ? 1:0;
-assign if_id_flush = is_branch ? 1:0;
-assign id_ex_flush = (load_hazard||is_branch) ? 1:0;
+assign if_id_flush = is_jump ? 1:0;
+assign id_ex_flush = is_jump ? 1:0;
 //分支检测产生信号只给IF/ID 和ID/EX
 
 // 前递数据

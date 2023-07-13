@@ -36,8 +36,6 @@ wire [31:0] npc  ;
 wire [31:0] offset ;
 
 //IF/ID reg
-wire [31:0] if_pc = pc;
-wire [31:0] id_pc;
 wire [31:0] if_inst = inst;
 wire [31:0] id_inst;
 
@@ -69,15 +67,45 @@ assign rst_n = ~cpu_rst;
 // hazard 
 wire pipeline_stop;
 wire pipeline_flush;
+wire is_jump;
 // forward signals
 //wire [31:0] mem_wd;
 wire [31:0] final_rd1;
 wire [31:0] final_rd2;
 
+//因为流水线寄存器而多出来的信号
+wire 		id_we, ex_we, mem_we, wb_we;//寄存器写使能
+wire [4: 0] id_wr, ex_wr, mem_wr, wb_wr;//寄存器写编号
+wire [31:0] mem_wd, wb_wd;//寄存器写数据
+
+
+wire [31:0] ex_aluC, mem_aluC;
+wire [31:0] ex_pc4, mem_pc4;
+wire [31:0] id_dram_we, ex_dram_we, mem_dram_we;//数据存储器写使能
+wire [31:0] id_ext, ex_ext, mem_ext;
+
+wire [31:0] id_rd2, ex_rd2, mem_rd2;//rd2 值
+wire [31:0] id_rf_wesl, ex_rf_wesl, mem_rf_wesl;//寄存器写选择
+
+wire [31:0] if_pc, id_pc, ex_pc;
+wire [31:0] id_alu_op, ex_alu_op;
+wire [31:0] id_npco_sel, ex_npco_sel;
+
+wire [31:0] id_npc_op, ex_npc_op;//特殊 再看看
+wire [31:0] ex_npc;//特殊 再看看
+wire [31:0] id_rd1, ex_rd1;
+wire [31:0] id_aluB, ex_aluB;
+
+wire [31:0] if_inst, id_inst;
+//for hazard
+wire [4: 0] id_rs1,id_rs2;
+
+
+
 hazard_detection HD (
 	.clk      		(clk      		),
 	.rst_n          (rst_n         	),
-	.is_branch      (is_branch     	),
+	.is_jump      	(is_jump		),//改为 静态分支预测 预测不发生跳转
 	.id_rs1         (id_rs1        	),
 	.id_rs2         (id_rs2        	),
 	.id_rd1         (id_rd1        	),
@@ -85,7 +113,7 @@ hazard_detection HD (
     .mem_wr         (mem_wr        	),
 	.mem_we  	    (mem_we  	   	),
 	.wb_we   	    (wb_we   	   	),
-	.dram_we        (dram_we       	),
+	.dram_we        (mem_dram_we	),
 	.mem_wd         (mem_wd        	),
 	.wb_wd          (wb_wd         	),
 	.final_rd1      (final_rd1     	),
@@ -99,8 +127,8 @@ hazard_detection HD (
 ifetch IF (
 	.clk	(cpu_clk),
 	.rst_n	(rst_n	),
-	.ex_npc	(ex_npc	),
-	.npc_op	(npc_op	),
+	.ex_npc	(ex_npc	),//特殊
+	.npc_op	(id_npc_op),//特殊
 	.pc		(if_pc	)
 );
 	
@@ -129,7 +157,7 @@ idecode ID (
 	.wb_wd    	(wb_wd   	),
 	.wb_wr    	(wb_wr   	),
 	.wb_we		(wb_we	 	),
-							 ,
+							 
  	.rs1        (id_rs1     ),
 	.rs2        (id_rs2     ),
 	.rd1        (id_rd1     ),
@@ -139,7 +167,7 @@ idecode ID (
 	.id_wr_o    (id_wr	 	),
 	.npc_op	    (id_npc_op	),
 	.npco_sel   (id_npco_sel),
-	.id_rf_we   (id_we	),
+	.id_rf_we   (id_we		),
 	.rf_wesl	(id_rf_wesl ),
 	.alu_op	    (id_alu_op	),
 	.dram_we    (id_dram_we )
@@ -185,13 +213,14 @@ reg_id_ex ID_EX_REG(
 
 //执行EX
 execute EX (
-	.alu_op	(alu_op		),
-	.npc_op (npc_op 	),
+	.alu_op	(ex_alu_op		),
+	.npc_op (ex_npc_op 	),
 	.aluA	(final_rd1	),
 	.aluB	(final_rd2	),
 	.pc	    (ex_pc	  	),
 	.ext	(ex_ext		),
              
+	.is_jump(is_jump	),
 	.aluC	(ex_aluC	),
 	.npc    (ex_npc    	),
 	.pc4    (ex_pc4    	)
@@ -208,14 +237,16 @@ reg_ex_mem EX_MEM_REG(
 	.ex_pc4     (ex_pc4     ),
 	.ex_aluC    (ex_aluC    ),
 	.ex_dram_we (ex_dram_we ),
+	.ex_ext		(ex_ext		),
 	.ex_wr      (ex_wr      ),
 	.ex_we 	    (ex_we 	    ),//rf_we
 							 
 	.mem_rd2    (mem_rd2    ),
-	.mem_rf_wes (mem_rf_wesl),
+	.mem_rf_wesl(mem_rf_wesl),
 	.mem_pc4    (mem_pc4    ),
 	.mem_aluC   (mem_aluC   ),
 	.mem_dram_we(mem_dram_we),
+	.mem_ext	(mem_ext	),
 	.mem_wr     (mem_wr     ),
 	.mem_we	    (mem_we	    ),
 	
@@ -281,7 +312,13 @@ assign Bus_wen=dram_we;
 assign Bus_wdata=rd2;
 assign dram_rdo = Bus_rdata;
 
+//pipeline reg
 
+
+
+//wire just for trace
+wire id_have_inst,ex_have_inst,mem_have_inst,wb_have_inst;
+wire mem_pc,wb_pc;
 
 
 `ifdef RUN_TRACE
