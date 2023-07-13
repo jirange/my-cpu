@@ -2,7 +2,8 @@
 module hazard_detection(
     input             clk         ,
     input             rst_n       ,
-    input             alub_sel    ,
+    input             alub_sel    ,//id_alub_sel
+    input             id_npc_op    ,
 
     input             is_jump  ,
     input      [4 :0] id_rs1     ,//rs1 寄存器编号 
@@ -27,6 +28,11 @@ module hazard_detection(
     output reg        pipeline_flush,//寄存器的清空信号 因为分支检测
     output reg        pipeline_stop	//流水线暂停信号
 );
+//JMP forward
+wire have_jmp = (id_npc_op==`NPC_JMP || id_npc_op==`NPC_JMPR);//暂时无用
+
+
+
 
 //RAW:A ID/EX
 wire rs1_id_ex_hazard = (ex_wr == id_rs1) && ex_we && ex_wr != 0;
@@ -48,9 +54,17 @@ wire rs2_id_wb_hazard = (wb_wr == id_rs2) && wb_we && wb_wr != 0 && alub_sel==`A
 wire load_hazard;
 assign load_hazard = (rs1_id_ex_hazard || rs2_id_ex_hazard) &&  mem_dram_we == `DRAM_WY;
 
-assign pipeline_stop = load_hazard ? 1:0;
-assign pipeline_flush = is_jump ? 1:0;
+/*assign pipeline_stop = load_hazard ? 1:0;
+assign pipeline_flush = is_jump ? 1:0;*/
 //分支检测产生信号只给IF/ID 和ID/EX
+always @(*) begin
+    if (load_hazard)    pipeline_stop = 1;
+    else                pipeline_stop = 0;
+end
+always @(*) begin
+    if (is_jump)    pipeline_flush = 1;
+    else                pipeline_flush = 0;
+end
 
 // 前递数据
 /*将ex、MEM、WB阶段的结果前推到ID阶段，参与ID阶段运算 源操作数的选择*/
@@ -67,5 +81,8 @@ always @(*) begin
     else if (rs2_id_wb_hazard) 	final_rd2 = wb_wd  ;
     else                        final_rd2 = id_aluB;//不前递的话 还是保持原来的aluB
 end
+
+
+
 
 endmodule

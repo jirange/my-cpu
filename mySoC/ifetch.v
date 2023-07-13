@@ -4,20 +4,25 @@ module ifetch(
     input             clk  ,
     input             rst_n,
     input      [31:0] ex_npc  , 
-	input 		[1:0] npc_op,
+	input 		      is_jump,
 
     output reg [31:0] pc
 );
-wire pc4 = pc+4;
-wire din = (npc_op==`NPC_PC4) ? pc4:ex_npc; 
+//wire pc4 = pc+4;
+wire [31:0] din = is_jump ? ex_npc:pc+4; 
 
-if_pc PC (
-	.clk	(cpu_clk),
+/*if_pc PC (
+	.clk	(clk),
 	.rst_n	(rst_n	),
 	.din	(din	),
 	
 	.pc		(pc	)
-);
+);*/
+
+always @(posedge clk, negedge rst_n) begin
+    if(~rst_n)	pc <=-4;//7/13 11:23 -4 ->0
+    else		pc <= din;
+end
 	
 
 endmodule

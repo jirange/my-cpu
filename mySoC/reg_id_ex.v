@@ -38,6 +38,12 @@ module reg_id_ex(
     output reg [4 :0] ex_wr     ,	//写回寄存器的编号
     output reg        ex_we		,//寄存器写使能
 
+    input [31:0] id_final_rd1	,
+    input [31:0] id_final_rd2	,
+    output reg [31:0] ex_final_rd1,
+    output reg [31:0] ex_final_rd2,//那ALUB和A是否就不用保存了
+
+
     input             id_have_inst ,	//trace
     output reg        ex_have_inst	//trace
 );
@@ -48,7 +54,18 @@ always @(posedge clk or negedge rst_n) begin
 	else if (stop) ex_have_inst <= ex_have_inst;//可能有问题
     else           ex_have_inst <= id_have_inst;
 end
-
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n)    ex_final_rd1 <= 'b0        ;
+    else if (flush)ex_final_rd1 <= 'b0        ;
+	else if (stop) ex_final_rd1 <= ex_final_rd1;//可能有问题
+    else           ex_final_rd1 <= id_final_rd1;
+end
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n)    ex_final_rd2 <= 'b0        ;
+    else if (flush)ex_final_rd2 <= 'b0        ;
+	else if (stop) ex_final_rd2 <= ex_final_rd2;//可能有问题
+    else           ex_final_rd2 <= id_final_rd2;
+end
 always @(posedge clk or negedge rst_n) begin
     if (~rst_n)     ex_pc <= 'b0    	;
     else if (flush) ex_pc <= 'b0    	;

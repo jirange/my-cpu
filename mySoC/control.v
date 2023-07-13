@@ -58,7 +58,7 @@ always @(*) begin
 end			
 
 assign npco_sel = (opcode==OPCODE_I_JALR) ? `NPCO_ALU :`NPCO_SEXT;	
-//如add等 应该，也赋为0 反正无所谓
+//锟斤拷add锟斤拷 应锟矫ｏ拷也锟斤拷为0 锟斤拷锟斤拷锟斤拷锟斤拷谓
 
 assign rf_we = (opcode==OPCODE_S)||(opcode==OPCODE_B) ? `RF_WN:`RF_WY;
 
@@ -79,7 +79,7 @@ always @(*) begin
         OPCODE_U : sext_op = `EXT_U;
         OPCODE_J : sext_op = `EXT_J;
         default:   sext_op = `EXT_I;
-		//R型指令也当做I型扩展了  反正无所谓
+		//R锟斤拷指锟斤拷也锟斤拷锟斤拷I锟斤拷锟斤拷展锟斤拷  锟斤拷锟斤拷锟斤拷锟斤拷谓
     endcase
 end	
 
