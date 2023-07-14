@@ -11,7 +11,7 @@ module reg_pc(
 
 always @(posedge clk or negedge rst_n) begin
     if (~rst_n)    pc <= -4;//32'b0
-    else if (stop) pc <= pc ;
+    else if (stop) pc <= 0 ;
     else           pc <= din;
 end
 

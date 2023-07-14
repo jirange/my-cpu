@@ -47,7 +47,12 @@ module reg_id_ex(
     input             id_have_inst ,	//trace
     output reg        ex_have_inst	//trace
 );
-
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n)    ex_dram_we <= 'b0        ;
+    else if (flush)ex_dram_we <= 'b0        ;
+	else if (stop) ex_dram_we <= ex_dram_we;//可能有问题
+    else           ex_dram_we <= id_dram_we;
+end
 always @(posedge clk or negedge rst_n) begin
     if (~rst_n)    ex_have_inst <= 'b0        ;
     else if (flush)ex_have_inst <= 'b0        ;

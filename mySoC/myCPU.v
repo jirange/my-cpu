@@ -79,8 +79,11 @@ wire id_alub_sel;
 //wire [31:0] mem_wd;
 wire [31:0] id_final_rd1, ex_final_rd1;
 wire [31:0] id_final_rd2, ex_final_rd2;
+wire [31:0] sw_final_rd2;
 
-
+//试一试是否是只需要if id需要暂停，其余ex，mem、wb不需要
+//也就是说，只有if/id reg和id/ex reg需要stop
+wire nostop=1'b0;
 
 
 hazard_detection HD (
@@ -88,11 +91,16 @@ hazard_detection HD (
 	.rst_n          (rst_n         	),
 	.alub_sel       (id_alub_sel       ),//id_
 	.id_npc_op       (id_npc_op       ),//id_
+	.id_dram_we		(id_dram_we),
+
+	.sw_final_rd2   (sw_final_rd2),
+
 
 	.is_jump      	(is_jump		),//改为 静态分支预测 预测不发生跳转
 	.id_rs1         (id_rs1        	),
 	.id_rs2         (id_rs2        	),
 	.id_rd1         (id_rd1        	),
+	.id_rd2         (id_rd2        	),
 	.id_aluB        (id_aluB        ),
     .ex_wr          (ex_wr        	),
     .mem_wr         (mem_wr        	),
@@ -100,7 +108,7 @@ hazard_detection HD (
 	.ex_we  	    (ex_we  	   	),
 	.mem_we  	    (mem_we  	   	),
 	.wb_we   	    (wb_we   	   	),
-	.mem_dram_we    (mem_dram_we	),
+	.ex_rf_wesl    (ex_rf_wesl	),
 	.ex_wd          (ex_wd        	),//7/13 17:28
 	.mem_wd         (mem_wd        	),
 	.wb_wd          (wb_wd         	),
@@ -111,12 +119,21 @@ hazard_detection HD (
 ); 
 
 
+/*reg_pc REG_PC (
+	.clk      		(cpu_clk      	),
+	.rst_n          (rst_n         	),
+	.din          (id_pc         	),
+	.pc          (if_pc         	),
+	.stop  (pipeline_stop 	)
+); */
 //取指IF
 ifetch IF (
 	.clk	(cpu_clk),
 	.rst_n	(rst_n	),
 	.ex_npc	(ex_npc	),//特殊
 	.is_jump(is_jump),//特殊 ex is_jump
+		.stop  (pipeline_stop 	),
+
 	.pc		(if_pc	)
 );
 	
@@ -167,8 +184,8 @@ idecode ID (
 reg_id_ex ID_EX_REG(
 	.clk		(cpu_clk    	),
 	.rst_n		(rst_n         	),
-	.flush		(pipeline_flush	),
-	.stop		(pipeline_stop 	),
+	.flush		(pipeline_flush || pipeline_stop),
+	.stop		(nostop 	),
 	
 	.id_pc		(id_pc		),
 	.id_npco_sel(id_npco_sel),
@@ -179,7 +196,7 @@ reg_id_ex ID_EX_REG(
     .id_ext     (id_ext     ),
     .id_aluA    (id_rd1    	),
     .id_aluB    (id_aluB    ),
-    .id_rd2     (id_rd2     ),
+    .id_rd2     (sw_final_rd2     ),//7/14 16:42
     .id_wr     	(id_wr     	),
     .id_we 	  	(id_we 	  	),
 	
@@ -237,9 +254,9 @@ wb_mux EX_MUX (
 reg_ex_mem EX_MEM_REG(
 	.clk		(cpu_clk	),
 	.rst_n      (rst_n      ),
-	.stop       (pipeline_stop),
+	.stop       (nostop),
 							 
-	.ex_rd2     (ex_rd2     ),
+	.ex_rd2     (ex_rd2),//7/14 16:13
 	.ex_rf_wesl (ex_rf_wesl ),
 	.ex_pc4     (ex_pc4     ),
 	.ex_aluC    (ex_aluC    ),
@@ -278,7 +295,7 @@ wb_mux MEM_MUX (
 reg_mem_wb MEM_WB_REG(
 	.clk	(cpu_clk),
 	.rst_n	(rst_n	),
-	.stop   (pipeline_stop),
+	.stop   (nostop),
 			
 	.mem_we (mem_we ),
 	.mem_wd (mem_wd ),

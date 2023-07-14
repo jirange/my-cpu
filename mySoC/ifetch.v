@@ -5,6 +5,7 @@ module ifetch(
     input             rst_n,
     input      [31:0] ex_npc  , 
 	input 		      is_jump,
+    input             stop,
 
     output reg [31:0] pc
 );
@@ -21,8 +22,9 @@ wire [31:0] din = is_jump ? ex_npc:pc+4;
 
 always @(posedge clk, negedge rst_n) begin
     if(~rst_n)	pc <=-4;//7/13 11:23 -4 ->0
+    else if(stop) pc <= pc;
     else		pc <= din;
 end
-	
+
 
 endmodule
